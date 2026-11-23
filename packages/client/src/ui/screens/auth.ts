@@ -1,5 +1,6 @@
 import { h } from "../dom.ts";
 import { api, auth } from "../../api.ts";
+import { icon } from "../icons.ts";
 
 export function authScreen(mode: "login" | "register", nav: { done: () => void; back: () => void }): { el: HTMLElement; dispose: () => void } {
   let current = mode;
@@ -40,8 +41,8 @@ export function authScreen(mode: "login" | "register", nav: { done: () => void; 
   );
   const el = h("div", { class: "screen scenic" },
     h("div", { class: "content" },
-      h("div", { class: "topbar" }, h("div", { class: "logo", style: "cursor:pointer", onclick: nav.back }, "CatGen ", h("span", {}, "Online"))),
-      h("div", { class: "auth-card panel" }, h("h2", { class: "display" }, "Welcome, traveller"), h("p", { class: "muted" }, "Your account holds all of your cats."), tabs, form),
+      h("div", { class: "topbar" }, h("div", { class: "logo", style: "cursor:pointer", onclick: nav.back }, icon("paw"), "CatGen ", h("span", {}, "Online"))),
+      h("div", { class: "auth-card panel" }, h("div", { style: "text-align:center" }, h("div", { class: "title-banner" }, "Welcome, traveller")), h("p", { class: "muted" }, "Your account holds all of your cats."), tabs, form),
     ),
   );
   setTimeout(() => user.focus(), 50);

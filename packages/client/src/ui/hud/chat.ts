@@ -20,7 +20,10 @@ export class ChatBox {
     this.input = h("input", { class: "input", maxlength: 240, placeholder: "Press Enter to talk · /w name msg · /clan · /global · /me" }) as HTMLInputElement;
     this.input.addEventListener("keydown", (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") this.submit();
+      if (e.key === "Enter") {
+        this.submit();
+        this.input.blur(); // hand the keyboard back to the game after talking
+      }
       if (e.key === "Escape") this.input.blur();
     });
     this.el = h("div", { class: "hud-chat panel" }, this.tabsEl, this.log, this.input);

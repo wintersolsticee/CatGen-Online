@@ -11,16 +11,17 @@ import { renderPortrait } from "../../render/cat-sprites.ts";
 import type { NetPlayer } from "../../game/net.ts";
 import type { GameBridge } from "../../game/GameScene.ts";
 import { KEY_LABELS } from "../../game/keybinds.ts";
+import { icon, type IconName } from "../icons.ts";
 
-const WEATHER_ICON: Record<Weather, string> = { clear: "☀️", cloudy: "☁️", rain: "🌧️", storm: "⛈️", fog: "🌫️", snow: "❄️" };
-const ACTIONS: { move: CombatMoveId | "interact" | "stalk"; icon: string; name: string }[] = [
-  { move: "swipe", icon: "🐾", name: "Swipe" },
-  { move: "bite", icon: "🦷", name: "Bite" },
-  { move: "pounce", icon: "💨", name: "Pounce" },
-  { move: "block", icon: "🛡️", name: "Block" },
-  { move: "dodge", icon: "↪️", name: "Dodge" },
-  { move: "stalk", icon: "🌾", name: "Stalk" },
-  { move: "interact", icon: "✋", name: "Interact" },
+const WEATHER_ICON: Record<Weather, IconName> = { clear: "sun", cloudy: "cloud", rain: "rain", storm: "storm", fog: "fog", snow: "snow" };
+const ACTIONS: { move: CombatMoveId | "interact" | "stalk"; icon: IconName; name: string }[] = [
+  { move: "swipe", icon: "swipe", name: "Swipe" },
+  { move: "bite", icon: "bite", name: "Bite" },
+  { move: "pounce", icon: "pounce", name: "Pounce" },
+  { move: "block", icon: "block", name: "Block" },
+  { move: "dodge", icon: "dodge", name: "Dodge" },
+  { move: "stalk", icon: "stalk", name: "Stalk" },
+  { move: "interact", icon: "interact", name: "Interact" },
 ];
 
 /** The DOM heads-up display. Receives data from the game scene via GameBridge. */
@@ -35,7 +36,7 @@ export class Hud implements GameBridge {
   private timeEl = h("div", { class: "time" });
   private metaEl = h("div", { class: "meta" });
   private minimap = h("canvas", { class: "minimap", title: "Click for the full map (M)" }) as HTMLCanvasElement;
-  private territoryEl = h("div", { class: "hud-territory panel", style: "display:none" });
+  private territoryEl = h("div", { class: "hud-territory", style: "display:none" });
   private promptEl = h("div", { class: "hud-prompt panel", style: "display:none" });
   private panelHost = h("div");
   private cardHost = h("div");
@@ -52,25 +53,29 @@ export class Hud implements GameBridge {
     this.chat = new ChatBox(ctx);
     this.portrait = h("canvas", { class: "portrait", width: 128, height: 128 }) as HTMLCanvasElement;
     this.mapBase = renderMapImage(ctx.map, 2);
-    for (const k of ["hp", "st", "hu"] as const) this.bars[k].append(h("i"), h("span"));
+    const barIcon: Record<string, IconName> = { hp: "health", st: "stamina", hu: "food" };
+    for (const k of ["hp", "st", "hu"] as const) {
+      this.bars[k].append(h("i"), h("span"), h("b", {}, icon(barIcon[k])));
+      this.bars[k].setAttribute("data-tip", k === "hp" ? "Health" : k === "st" ? "Stamina" : "Hunger");
+    }
     const actionBar = h("div", { class: "hud-actions panel" }, ACTIONS.map((a) => {
       const cd = h("div", { class: "cd" });
-      const el = h("div", { class: "action", title: a.name, onclick: () => this.clickAction(a.move) }, h("span", { class: "key" }, KEY_LABELS[a.move] ?? ""), h("span", { class: "ico" }, a.icon), h("span", { class: "name" }, a.name), cd);
+      const el = h("div", { class: "action", "data-tip": `${a.name} (${KEY_LABELS[a.move] ?? ""})`, onclick: () => this.clickAction(a.move) }, h("span", { class: "key" }, KEY_LABELS[a.move] ?? ""), icon(a.icon), h("span", { class: "name" }, a.name), cd);
       this.actionEls.set(a.move, { el, cd });
       return el;
     }));
-    const menuBtn = (icon: string, key: string, title: string, name: PanelName) => h("button", { title: `${title} (${key})`, onclick: () => this.togglePanel(name) }, icon, h("span", { class: "key" }, key));
-    this.minimap.addEventListener("click", () => this.toggleBigMap());
+    const menuBtn = (ico: IconName, key: string, title: string, name: PanelName) => h("button", { "aria-label": `${title} (${key})`, title: `${title} (${key})`, onclick: () => this.togglePanel(name) }, icon(ico), h("span", { class: "key" }, key));
+    const ring = h("div", { class: "minimap-ring", title: "Click for the full map (M)", onclick: () => this.toggleBigMap() }, this.minimap);
     this.el = h("div", { id: "hud" },
       h("div", { class: "hud-status panel" }, this.portrait, h("div", {}, this.whoEl, this.subEl, h("div", { class: "bars" }, this.bars.hp, this.bars.st, this.bars.hu), this.condEl)),
       this.territoryEl,
-      h("div", { class: "hud-clock panel" }, this.timeEl, this.metaEl, this.minimap),
+      h("div", { class: "hud-clock panel" }, this.timeEl, this.metaEl, ring),
       this.chat.el,
       this.promptEl,
       actionBar,
       h("div", { class: "hud-menu" },
-        menuBtn("🎒", "I", "Inventory", "inventory"), menuBtn("🏕️", "K", "Clan", "clan"), menuBtn("💬", "O", "Friends", "social"),
-        menuBtn("😺", "G", "Emotes", "emotes"), menuBtn("❔", "H", "Help", "help"), menuBtn("⚙️", "Esc", "Settings", "settings")),
+        menuBtn("inventory", "I", "Inventory", "inventory"), menuBtn("clan", "K", "Clan", "clan"), menuBtn("friends", "O", "Friends", "social"),
+        menuBtn("emote", "G", "Emotes", "emotes"), menuBtn("help", "H", "Help", "help"), menuBtn("settings", "Esc", "Settings", "settings")),
       this.panelHost,
       this.cardHost,
     );
@@ -124,9 +129,18 @@ export class Hud implements GameBridge {
     }
     const clan = getClan(p.clan);
     this.whoEl.textContent = p.name;
-    this.subEl.textContent = `${clan?.name ?? "Loner"} · ${isRank(p.rank) ? RANKS[p.rank as Rank].name : p.rank}`;
-    this.subEl.style.color = clan?.color ?? "";
-    const setBar = (b: HTMLElement, v: number) => { (b.firstChild as HTMLElement).style.width = `${Math.max(0, Math.min(100, v))}%`; (b.lastChild as HTMLElement).textContent = String(Math.round(v)); };
+    const subKey = `${p.clan}|${p.rank}`;
+    if (this.subEl.dataset.k !== subKey) {
+      this.subEl.dataset.k = subKey;
+      this.subEl.replaceChildren(h("span", { class: "clan-dot", style: `background:${clan?.color ?? "#8e866f"};margin-right:5px` }), `${clan?.name ?? "Loner"} · ${isRank(p.rank) ? RANKS[p.rank as Rank].name : p.rank}`);
+    }
+    const setBar = (b: HTMLElement, v: number) => {
+      const pct = Math.max(0, Math.min(100, v));
+      const fill = b.children[0] as HTMLElement;
+      fill.style.width = `calc(${pct}% + ${18 * (pct / 100)}px)`;
+      fill.style.display = pct <= 0 ? "none" : "";
+      (b.children[1] as HTMLElement).textContent = String(Math.round(v));
+    };
     setBar(this.bars.hp, p.health);
     setBar(this.bars.st, p.stamina);
     setBar(this.bars.hu, p.hunger);
@@ -140,14 +154,18 @@ export class Hud implements GameBridge {
     }
     const hh = Math.floor(clock.hour), mm = Math.floor((clock.hour % 1) * 60);
     const part = clock.hour < 5 ? "Night" : clock.hour < 8 ? "Dawn" : clock.hour < 12 ? "Morning" : clock.hour < 17 ? "Afternoon" : clock.hour < 20.5 ? "Evening" : "Night";
-    this.timeEl.textContent = `${part} · ${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-    this.metaEl.textContent = `${WEATHER_ICON[weather] ?? ""} ${SEASON_NAMES[clock.season]} · Day ${clock.day + 1}${clock.isGathering ? " · 🌕 Gathering!" : ""}`;
+    const timeKey = `${part}${hh}${mm}${weather}${clock.season}${clock.day}${clock.isGathering}`;
+    if (this.timeEl.dataset.k !== timeKey) {
+      this.timeEl.dataset.k = timeKey;
+      this.timeEl.replaceChildren(icon(clock.isNight ? "moon" : part === "Dawn" ? "dawn" : "sun"), `${part} · ${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`);
+      this.metaEl.replaceChildren(icon(WEATHER_ICON[weather] ?? "sun"), `${SEASON_NAMES[clock.season]} · Day ${clock.day + 1}${clock.isGathering ? " · Gathering!" : ""}`);
+    }
     if (territory !== this.lastTerritory) {
       this.lastTerritory = territory;
       const tc = getClan(territory);
       this.territoryEl.style.display = "";
       this.territoryEl.textContent = tc ? `${tc.name} territory` : "Neutral ground";
-      this.territoryEl.style.color = tc?.color ?? "";
+
     }
     // Minimap.
     const pos = this.hooks.localPos();
@@ -226,7 +244,7 @@ export class Hud implements GameBridge {
 
   private toggleBigMap() {
     if (this.bigMap) { this.bigMap.remove(); this.bigMap = null; return; }
-    this.bigMap = h("div", { class: "big-map panel" }, h("div", { class: "row" }, h("h2", { class: "display grow", style: "margin:0" }, "The Forest Territories"), h("button", { class: "close-x", onclick: () => this.toggleBigMap() }, "✕")), h("canvas"));
+    this.bigMap = h("div", { class: "big-map panel" }, h("div", { class: "row", style: "margin-bottom:6px" }, icon("map"), h("h2", { class: "display grow", style: "margin:0" }, "The Forest Territories"), h("button", { class: "close-x", "aria-label": "Close", onclick: () => this.toggleBigMap() }, "✕")), h("canvas"));
     document.body.append(this.bigMap);
   }
 

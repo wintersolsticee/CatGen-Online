@@ -1,11 +1,11 @@
 import Phaser from "phaser";
 import type { Season, WorldMap, WorldObject } from "@catgen/shared";
-import { objectArt } from "../../render/object-textures.ts";
+import { objectArt } from "../../render/env-objects.ts";
 import { ensureCanvasTexture } from "../textures.ts";
 
 const CELL = 1024;
-const SWAY = new Set(["tall_grass", "reeds", "fern", "heather", "flowers", "tree_willow"]);
-const GROUND_COVER = new Set(["flowers", "lilypad", "pebbles", "stepping_stone", "fresh_kill_pile"]);
+const SWAY = new Set<string>();
+const GROUND_COVER = new Set(["flowers", "lilypad", "pebbles", "stepping_stone", "fresh_kill_pile", "heather"]);
 
 interface Live {
   obj: WorldObject;
@@ -44,11 +44,13 @@ export class ObjectLayer {
     const out: Live[] = [];
     for (const obj of objs) {
       const art = objectArt(obj.kind, obj.variant, this.season);
-      const tex = ensureCanvasTexture(this.scene, `obj_${obj.kind}_${obj.variant}_${this.season}`, () => art.canvas);
-      const img = this.scene.add.image(obj.x, obj.y, tex).setOrigin(art.anchorX, art.anchorY).setScale(obj.scale);
+      const texKey = `obj_${obj.kind}_${obj.variant}_${this.season}`;
+      const tex = ensureCanvasTexture(this.scene, texKey, () => art.canvas);
+      this.scene.textures.get(tex).setFilter(Phaser.Textures.FilterMode.NEAREST);
+      // Pixel art keeps whole-pixel scaling; the map's per-object scale is not applied.
+      const img = this.scene.add.image(Math.round(obj.x), Math.round(obj.y), tex).setOrigin(art.anchorX, art.anchorY).setScale(art.scale);
       img.setDepth(GROUND_COVER.has(obj.kind) ? obj.y - 2000 : obj.y);
-      if (obj.variant % 2) img.setFlipX(true);
-      out.push({ obj, img, canopy: art.canopy ? { x: art.canopy.x * obj.scale, y: art.canopy.y * obj.scale, w: art.canopy.w * obj.scale, h: art.canopy.h * obj.scale } : undefined });
+      out.push({ obj, img, canopy: art.canopy });
     }
     this.live.set(key, out);
   }
@@ -73,7 +75,7 @@ export class ObjectLayer {
     // Foliage sway + canopy see-through when the player walks behind a tree.
     for (const list of this.live.values()) {
       for (const l of list) {
-        if (SWAY.has(l.obj.kind)) l.img.setRotation(Math.sin(time / 700 + l.obj.x * 0.01) * 0.04 * this.wind);
+        if (SWAY.size && SWAY.has(l.obj.kind)) l.img.setRotation(Math.sin(time / 700 + l.obj.x * 0.01) * 0.04 * this.wind);
         if (l.canopy && focus) {
           const inside = focus.y < l.obj.y && focus.x > l.obj.x + l.canopy.x && focus.x < l.obj.x + l.canopy.x + l.canopy.w && focus.y > l.obj.y + l.canopy.y && focus.y < l.obj.y + l.canopy.y + l.canopy.h + 40;
           const target = inside ? 0.42 : 1;

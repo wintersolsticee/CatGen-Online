@@ -74,4 +74,11 @@ Each account can have up to **5 cats**, and your cats are saved automatically.
 - Inspired by the *Warriors* book series by **Erin Hunter**. ThunderClan, RiverClan, WindClan,
   ShadowClan, SkyClan and related names belong to their respective owners. CatGen Online is a
   non-commercial fan game.
-- Cat artwork: **"Pet Cats Pack" by LuizMelo** ([luizmelo.itch.io](https://luizmelo.itch.io/pet-cat-pack), CC0).
+- Cats: **"Pet Cats Pack" by LuizMelo** ([itch.io](https://luizmelo.itch.io/pet-cat-pack), CC0).
+- Forest, water, trees, rocks and plants: **inkBubi** ("Seasons of Forest" free sample) and
+  **Vomdrache** ("Forest Tilemap"), from [OpenGameArt](https://opengameart.org), CC0.
+- Interface frames, buttons and bars: **Kenney** ([kenney.nl](https://kenney.nl)), CC0.
+- Icons: [game-icons.net](https://game-icons.net) by **Lorc, Delapouite, Skoll, Sbed, Lucas and
+  Zeromancer**, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+
+The full list of every asset, its licence and where it is used is in [ASSET_CREDITS.md](ASSET_CREDITS.md).

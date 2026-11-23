@@ -2,6 +2,7 @@ import { getClan, RANKS, normalizeAppearance } from "@catgen/shared";
 import { h, modal, toast } from "../dom.ts";
 import { api, auth, type CharacterSummary } from "../../api.ts";
 import { drawCatCard } from "../scene-art.ts";
+import { icon } from "../icons.ts";
 
 export function selectScreen(nav: { play: (c: CharacterSummary) => void; create: () => void; edit: (c: CharacterSummary) => void; logout: () => void }): { el: HTMLElement; dispose: () => void } {
   const grid = h("div", { class: "char-grid" });
@@ -9,10 +10,10 @@ export function selectScreen(nav: { play: (c: CharacterSummary) => void; create:
   const el = h("div", { class: "screen scenic" },
     h("div", { class: "content" },
       h("div", { class: "topbar" },
-        h("div", { class: "logo" }, "CatGen ", h("span", {}, "Online")),
-        h("button", { class: "btn btn-ghost", onclick: () => { auth.token = null; nav.logout(); } }, "Log out"),
+        h("div", { class: "logo" }, icon("paw"), "CatGen ", h("span", {}, "Online")),
+        h("button", { class: "btn btn-ghost", onclick: () => { auth.token = null; nav.logout(); } }, icon("exit"), "Log out"),
       ),
-      h("div", { class: "select-wrap" }, h("h1", { class: "display" }, "Choose your cat"), status, grid),
+      h("div", { class: "select-wrap" }, h("div", { class: "title-banner" }, "Choose your cat"), status, grid),
     ),
   );
   const load = async () => {
@@ -31,14 +32,14 @@ export function selectScreen(nav: { play: (c: CharacterSummary) => void; create:
             h("span", { class: "chip" }, RANKS[c.rank]?.name ?? c.rank),
           ),
           h("div", { class: "row" },
-            h("button", { class: "btn btn-primary grow", onclick: () => nav.play(c) }, "Play"),
+            h("button", { class: "btn btn-primary grow", onclick: () => nav.play(c) }, icon("paw"), "Play"),
             h("button", { class: "btn btn-ghost btn-sm", onclick: () => nav.edit(c) }, "Edit"),
-            h("button", { class: "btn btn-ghost btn-sm", title: "Retire this cat", onclick: () => confirmDelete(c) }, "✕"),
+            h("button", { class: "btn btn-ghost btn-sm", "data-tip": "Retire this cat", "aria-label": "Retire this cat", onclick: () => confirmDelete(c) }, "✕"),
           ),
         ));
         requestAnimationFrame(() => drawCatCard(canvas, normalizeAppearance(c.appearance), "sit"));
       }
-      if (characters.length < max) grid.append(h("div", { class: "char-card panel new", onclick: nav.create }, "+ Create a new cat"));
+      if (characters.length < max) grid.append(h("div", { class: "char-card panel new", onclick: nav.create }, icon("paw"), "Create a new cat"));
     } catch (e) {
       status.textContent = (e as Error).message;
       if (!auth.token) nav.logout();

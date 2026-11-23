@@ -6,6 +6,7 @@ import { selectScreen } from "./ui/screens/select.ts";
 import { creatorScreen } from "./ui/screens/creator.ts";
 import { gameScreen } from "./ui/screens/game-screen.ts";
 import { preloadCatSprites } from "./render/cat-sprites.ts";
+import { preloadEnvironment } from "./render/env-assets.ts";
 
 /** Minimal screen router: each screen returns its element and a dispose function. */
 const app = document.getElementById("app")!;
@@ -26,7 +27,7 @@ const nav = {
   play: (c: CharacterSummary) => show(gameScreen(c, { exit: nav.select })),
 };
 
-// Cat artwork is tiny (~300 KB); load it before the first screen so every preview can draw instantly.
-preloadCatSprites()
+// All artwork is small (~1 MB of pixel art); load it before the first screen so every view can draw instantly.
+Promise.all([preloadCatSprites(), preloadEnvironment()])
   .catch((e) => console.error(e))
   .finally(() => nav.landing());

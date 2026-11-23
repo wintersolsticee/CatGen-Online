@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import type { Season, WorldMap } from "@catgen/shared";
-import { TerrainPainter } from "../../render/terrain-textures.ts";
+import { PixelTerrainPainter } from "../../render/pixel-terrain.ts";
+import { WORLD_PIXEL } from "../../render/env-assets.ts";
 
 const CHUNK_TILES = 8;
 
@@ -18,15 +19,14 @@ interface Chunk {
 export class ChunkLayer {
   private chunks = new Map<string, Chunk>();
   private pending = new Set<string>();
-  private painter: TerrainPainter;
+  private painter: PixelTerrainPainter;
   private season: Season;
   private chunkPx: number;
-  maxChunks = 24;
-  /** Paint at reduced resolution on "low" graphics. */
-  scale = 1;
+  /** Chunks are tiny at art resolution (128x128 px), so many can stay cached. */
+  maxChunks = 64;
 
   constructor(private scene: Phaser.Scene, private map: WorldMap, season: Season) {
-    this.painter = new TerrainPainter(map);
+    this.painter = new PixelTerrainPainter(map);
     this.season = season;
     this.chunkPx = CHUNK_TILES * map.tileSize;
   }
@@ -51,17 +51,17 @@ export class ChunkLayer {
 
   private build(cx: number, cy: number) {
     const key = `${cx}_${cy}`;
-    const { canvas, water } = this.painter.paintChunk(cx, cy, CHUNK_TILES, this.season, this.scale);
+    const { canvas, water } = this.painter.paintChunk(cx, cy, CHUNK_TILES, this.season);
     const texKey = `chunk_${key}_${this.season}`;
     if (this.scene.textures.exists(texKey)) this.scene.textures.remove(texKey);
-    this.scene.textures.addCanvas(texKey, canvas);
-    const ground = this.scene.add.image(cx * this.chunkPx, cy * this.chunkPx, texKey).setOrigin(0, 0).setDepth(-100000).setScale(1 / this.scale);
+    this.scene.textures.addCanvas(texKey, canvas)!.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    const ground = this.scene.add.image(cx * this.chunkPx, cy * this.chunkPx, texKey).setOrigin(0, 0).setDepth(-100000).setScale(WORLD_PIXEL);
     let waterImg: Phaser.GameObjects.Image | null = null;
     if (water) {
       const wk = `${texKey}_w`;
       if (this.scene.textures.exists(wk)) this.scene.textures.remove(wk);
-      this.scene.textures.addCanvas(wk, water);
-      waterImg = this.scene.add.image(cx * this.chunkPx, cy * this.chunkPx, wk).setOrigin(0, 0).setDepth(-99999).setScale(1 / this.scale).setBlendMode(Phaser.BlendModes.ADD);
+      this.scene.textures.addCanvas(wk, water)!.setFilter(Phaser.Textures.FilterMode.NEAREST);
+      waterImg = this.scene.add.image(cx * this.chunkPx, cy * this.chunkPx, wk).setOrigin(0, 0).setDepth(-99999).setScale(WORLD_PIXEL);
     }
     this.chunks.set(key, { key, ground, water: waterImg });
   }
@@ -83,11 +83,13 @@ export class ChunkLayer {
     for (let i = 0; i < n; i++) this.build(needed[i][0], needed[i][1]);
 
     // Animate water shimmer.
-    const a = 0.35 + Math.sin(time / 900) * 0.25;
+    // Water sparkles twinkle and drift by whole art pixels.
+    const a = 0.25 + Math.abs(Math.sin(time / 700)) * 0.6;
+    const drift = Math.round(Math.sin(time / 1500) * 1.5) * WORLD_PIXEL;
     for (const c of this.chunks.values()) {
       if (c.water) {
         c.water.setAlpha(a);
-        c.water.x = c.ground.x + Math.sin(time / 1300) * 6;
+        c.water.x = c.ground.x + drift;
       }
     }
     // Evict far chunks.

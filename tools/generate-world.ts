@@ -168,18 +168,29 @@ const nearCamp = (tx: number, ty: number) => camps.some((c) => Math.hypot(tx - c
 const nearCenter = (tx: number, ty: number) => Math.hypot(tx - center.x, ty - center.y) < 11;
 
 // Decorations per terrain type: [kind, density, collisionRadius, scale range]
+// Densities/colliders are tuned for the pixel-art sprites (trees are ~460 world units wide,
+// so they are spaced out; collision radius covers the trunk only).
 const decor: Partial<Record<TerrainId, [string, number, number, [number, number]][]>> = {
-  forest_floor: [["tree_oak", 0.28, 46, [0.9, 1.35]], ["tree_birch", 0.06, 30, [0.9, 1.2]], ["bush", 0.12, 0, [0.8, 1.2]], ["fern", 0.25, 0, [0.7, 1.2]], ["log", 0.015, 40, [0.9, 1.1]], ["rock_small", 0.03, 0, [0.6, 1]]],
-  pine_floor: [["tree_pine", 0.32, 40, [0.9, 1.4]], ["fern", 0.12, 0, [0.7, 1.1]], ["bush", 0.05, 0, [0.7, 1]], ["rock_small", 0.03, 0, [0.6, 1]]],
-  grass: [["flowers", 0.14, 0, [0.7, 1.2]], ["bush", 0.04, 0, [0.7, 1.1]], ["tree_oak", 0.025, 46, [0.9, 1.2]], ["rock_small", 0.02, 0, [0.6, 1]], ["tall_grass", 0.2, 0, [0.8, 1.3]]],
-  moor: [["heather", 0.25, 0, [0.7, 1.2]], ["tall_grass", 0.25, 0, [0.8, 1.3]], ["boulder", 0.015, 44, [0.8, 1.2]], ["gorse", 0.05, 0, [0.8, 1.1]]],
-  marsh: [["reeds", 0.35, 0, [0.8, 1.3]], ["tree_willow", 0.03, 40, [0.9, 1.2]], ["lilypad", 0.03, 0, [0.7, 1]], ["tall_grass", 0.15, 0, [0.8, 1.2]]],
-  sand: [["pebbles", 0.1, 0, [0.7, 1.1]], ["reeds", 0.08, 0, [0.7, 1.1]]],
-  rock: [["boulder", 0.06, 44, [0.7, 1.3]], ["rock_small", 0.12, 0, [0.6, 1.1]], ["tree_pine", 0.03, 40, [0.8, 1.1]], ["heather", 0.08, 0, [0.6, 1]]],
-  shallow_water: [["lilypad", 0.06, 0, [0.6, 1]], ["stepping_stone", 0.03, 0, [0.8, 1.1]]],
-  cave_floor: [["crystal", 0.05, 0, [0.6, 1]], ["rock_small", 0.12, 0, [0.6, 1]], ["stalagmite", 0.04, 26, [0.7, 1.1]]],
+  forest_floor: [["tree_oak", 0.075, 30, [1, 1]], ["tree_birch", 0.012, 26, [1, 1]], ["bush", 0.05, 0, [1, 1]], ["fern", 0.05, 0, [1, 1]], ["log", 0.008, 40, [1, 1]], ["rock_small", 0.02, 0, [1, 1]], ["flowers", 0.03, 0, [1, 1]]],
+  pine_floor: [["tree_pine", 0.09, 26, [1, 1]], ["fern", 0.035, 0, [1, 1]], ["bush", 0.02, 0, [1, 1]], ["rock_small", 0.02, 0, [1, 1]], ["flowers", 0.015, 0, [1, 1]]],
+  grass: [["flowers", 0.06, 0, [1, 1]], ["bush", 0.02, 0, [1, 1]], ["tree_oak", 0.012, 30, [1, 1]], ["rock_small", 0.012, 0, [1, 1]], ["tall_grass", 0.03, 0, [1, 1]]],
+  moor: [["heather", 0.06, 0, [1, 1]], ["tall_grass", 0.04, 0, [1, 1]], ["boulder", 0.01, 60, [1, 1]], ["gorse", 0.025, 0, [1, 1]]],
+  marsh: [["reeds", 0.08, 0, [1, 1]], ["tree_willow", 0.012, 30, [1, 1]], ["lilypad", 0.02, 0, [1, 1]], ["tall_grass", 0.04, 0, [1, 1]]],
+  sand: [["pebbles", 0.04, 0, [1, 1]], ["reeds", 0.02, 0, [1, 1]]],
+  rock: [["boulder", 0.035, 60, [1, 1]], ["rock_small", 0.06, 0, [1, 1]], ["tree_pine", 0.012, 26, [1, 1]], ["heather", 0.03, 0, [1, 1]]],
+  shallow_water: [["lilypad", 0.05, 0, [1, 1]], ["stepping_stone", 0.02, 0, [1, 1]]],
+  cave_floor: [["crystal", 0.04, 0, [1, 1]], ["rock_small", 0.08, 0, [1, 1]], ["stalagmite", 0.035, 40, [1, 1]]],
 };
 
+const placedTrees: { x: number; y: number }[] = [];
+const treeGrid = new Map<string, { x: number; y: number }[]>();
+const tooCloseToTree = (x: number, y: number, min: number) => {
+  const gx = Math.floor(x / 512), gy = Math.floor(y / 512);
+  for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
+    for (const p of treeGrid.get(`${gx + ox},${gy + oy}`) ?? []) if (Math.hypot(p.x - x, p.y - y) < min) return true;
+  }
+  return false;
+};
 for (let ty = 0; ty < H; ty++) {
   for (let tx = 0; tx < W; tx++) {
     const t = grid[ty * W + tx];
@@ -195,6 +206,12 @@ for (let ty = 0; ty < H; ty++) {
         const x = (tx + 0.15 + rng() * 0.7) * TS;
         const y = (ty + 0.15 + rng() * 0.7) * TS;
         const scale = s0 + rng() * (s1 - s0);
+        if (kind.startsWith("tree")) {
+          if (tooCloseToTree(x, y, 300)) continue;
+          placedTrees.push({ x, y });
+          const key = `${Math.floor(x / 512)},${Math.floor(y / 512)}`;
+          treeGrid.set(key, [...(treeGrid.get(key) ?? []), { x, y }]);
+        }
         objects.push(obj(kind, x, y, [P("scale", Math.round(scale * 100) / 100), P("collisionRadius", Math.round(coll * scale)), P("variant", Math.floor(rng() * 4))]));
       }
     }
@@ -204,7 +221,7 @@ for (let ty = 0; ty < H; ty++) {
 // Fourtrees: four great oaks around a central rock.
 const fc = { x: (center.x + 0.5) * TS, y: (center.y + 0.5) * TS };
 for (const [ox, oy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-  objects.push(obj("tree_great_oak", fc.x + ox * 640, fc.y + oy * 560, [P("scale", 1.6), P("collisionRadius", 80), P("variant", 0)]));
+  objects.push(obj("tree_great_oak", fc.x + ox * 640, fc.y + oy * 560, [P("scale", 1.6), P("collisionRadius", 48), P("variant", 0)]));
 }
 objects.push(obj("great_rock", fc.x, fc.y - 40, [P("scale", 1.4), P("collisionRadius", 90), P("variant", 0)]));
 

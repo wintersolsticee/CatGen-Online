@@ -15,7 +15,7 @@ function itemName(ctx: HudContext, itemId: string) {
 
 export function panel(title: string, ctx: HudContext, ...content: (Node | null)[]): HTMLElement {
   return h("div", { class: "side-panel panel" },
-    h("header", {}, h("h2", { class: "display" }, title), h("button", { class: "close-x", onclick: () => ctx.openPanel(null) }, "✕")),
+    h("header", {}, h("h2", { class: "display" }, title), h("button", { class: "close-x", "aria-label": "Close", onclick: () => ctx.openPanel(null) }, "✕")),
     h("div", { class: "body scroll" }, ...content),
   );
 }
@@ -223,7 +223,7 @@ export function helpPanel(ctx: HudContext): HTMLElement {
     h("h3", { style: "margin-top:16px;font-size:15px" }, "Getting started"),
     h("p", { class: "muted", style: "font-size:13.5px;line-height:1.5" }, "Hunt by stalking (C) toward prey and pouncing (3). Carry your catch to your Clan's fresh-kill pile and press E. Gather herbs you find; use the right herb on an injury to cure it. Visit the medicine den to store herbs. Wounds left untreated can turn infected. At every full moon, the Clans meet at Fourtrees under a truce."),
     h("h3", { style: "margin-top:16px;font-size:15px" }, "Credits"),
-    h("p", { class: "faint", style: "font-size:12.5px;line-height:1.5" }, "Inspired by the Warriors series by Erin Hunter. Clan names belong to their respective owners. Cat sprites: \"Pet Cats Pack\" by LuizMelo (luizmelo.itch.io, CC0). A non-commercial fan project."),
+    h("p", { class: "faint", style: "font-size:12.5px;line-height:1.5" }, "Inspired by the Warriors series by Erin Hunter. Clan names belong to their respective owners. A non-commercial fan project. Art: cats by LuizMelo; forest by inkBubi and Vomdrache; interface by Kenney (kenney.nl), all CC0. Icons from game-icons.net by Lorc, Delapouite, Skoll, Sbed, Lucas and Zeromancer (CC BY 3.0)."),
   );
 }
 
@@ -243,7 +243,7 @@ export function catCard(ctx: HudContext, key: string, close: () => void): HTMLEl
     return h("div", { class: "row", style: "margin-top:8px" }, sel, h("button", { class: "btn btn-sm btn-primary", onclick: () => ctx.net.send(C2S.useItem, { itemId: sel.value, targetId: p.id }) }, "Treat"));
   })() : null;
   return h("div", { class: "cat-card panel" },
-    h("div", { class: "row" }, h("div", { class: "grow" }, h("div", { style: "font-weight:900;font-size:18px" }, p.name), h("div", { class: "clan-badge", style: `color:${clan?.color ?? "#c8bd9f"}` }, `${clan?.name ?? "Loner"} · ${rank}`)), h("button", { class: "close-x", onclick: close }, "✕")),
+    h("div", { class: "row" }, h("div", { class: "grow" }, h("div", { style: "font-weight:900;font-size:18px" }, p.name), h("div", { class: "clan-badge" }, h("span", { class: "clan-dot", style: `background:${clan?.color ?? "#8e866f"}` }), `${clan?.name ?? "Loner"} · ${rank}`)), h("button", { class: "close-x", "aria-label": "Close", onclick: close }, "✕")),
     h("div", { class: "bar hp", style: "margin-top:8px" }, h("i", { style: `width:${p.health}%` }), h("span", {}, `${Math.round(p.health)}`)),
     conds.length ? h("div", { class: "conditions" }, conds.map((c) => h("span", { class: "chip chip-danger", title: CONDITIONS[c].description }, CONDITIONS[c].name))) : h("div", { class: "faint", style: "font-size:12px;margin-top:4px" }, "Looks healthy."),
     treat,

@@ -145,9 +145,10 @@ export class Effects {
     this.fog.setAlpha(this.fog.alpha + (fogTarget - this.fog.alpha) * Math.min(1, dt * 0.5));
     this.fog.tilePositionX += dt * 12;
     this.fog.tilePositionY += dt * 4;
+    const world = this.scene.scene.get("game")?.cameras?.main ?? this.scene.cameras.main;
     const cam = this.scene.cameras.main;
-    this.fog.tilePositionX = cam.scrollX * 0.6 + time * 0.01;
-    this.fog.tilePositionY = cam.scrollY * 0.6;
+    this.fog.tilePositionX = world.scrollX * 0.6 + time * 0.01;
+    this.fog.tilePositionY = world.scrollY * 0.6;
 
     if (weather === "storm" && p && time > this.nextLightning) {
       this.nextLightning = time + 6000 + Math.random() * 12000;

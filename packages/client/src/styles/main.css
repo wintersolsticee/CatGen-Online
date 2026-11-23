@@ -1,233 +1,332 @@
-/* CatGen Online — UI theme: warm, illustrated, forest-at-dusk. */
+/*
+ * CatGen Online UI theme: wood, parchment and leaves.
+ * Frames, buttons, bars and ribbons are Kenney's CC0 "UI pack: RPG extension"
+ * and "UI Pack - Adventure"; icons are game-icons.net (CC BY 3.0). See ASSET_CREDITS.md.
+ */
 :root {
-  --bg-0: #0f1610;
-  --bg-1: #172219;
-  --panel: rgba(24, 32, 22, 0.86);
-  --panel-solid: #1c271d;
-  --panel-border: rgba(214, 190, 130, 0.28);
-  --ink: #f3ead6;
-  --ink-dim: #c8bd9f;
-  --ink-faint: #8e866f;
-  --accent: #e3a548;
-  --accent-2: #8fc46a;
+  --ui: /assets/ui;
+  --wood: #97714a;
+  --wood-dark: #6b4f33;
+  --wood-deep: #4a3522;
+  --parchment: #d3bf8f;
+  --parchment-light: #ece3ce;
+  --ink: #fff4dc;          /* text on wood */
+  --ink-dim: #e9d6b0;
+  --ink-faint: #c9b28a;
+  --ink-dark: #3b2a1a;     /* text on parchment */
+  --ink-dark-dim: #6b5236;
+  --accent: #f0b75a;
+  --leaf: #8fc46a;
   --danger: #e0603f;
-  --info: #7fb7d9;
-  --radius: 14px;
-  --shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
   --font: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Cinzel", "Georgia", serif;
+  --shadow: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: var(--bg-0); color: var(--ink); font-family: var(--font); overflow: hidden; }
+html, body { margin: 0; height: 100%; background: #142012; color: var(--ink); font-family: var(--font); overflow: hidden; }
 button, input, select, textarea { font-family: inherit; }
-#app { position: fixed; inset: 0; }
-#game { position: fixed; inset: 0; }
+#app, #game { position: fixed; inset: 0; }
 #game canvas { display: block; }
-
-/* ---------- Generic components ---------- */
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
-}
-.btn {
-  border: 1px solid transparent; border-radius: 999px; padding: 10px 20px; font-weight: 800; font-size: 15px;
-  cursor: pointer; transition: transform .12s, background .2s, box-shadow .2s; color: var(--ink); background: rgba(255,255,255,0.08);
-}
-.btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.14); }
-.btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.btn-primary { background: linear-gradient(180deg, #f0b75a, #c9822b); color: #2a1a08; box-shadow: 0 4px 18px rgba(227,165,72,.35); }
-.btn-primary:hover { background: linear-gradient(180deg, #f6c56e, #d38f35); }
-.btn-danger { background: linear-gradient(180deg, #e8735a, #b94a30); color: #fff; }
-.btn-ghost { background: transparent; border-color: var(--panel-border); }
-.btn-sm { padding: 6px 12px; font-size: 13px; }
-.input, select.input, textarea.input {
-  width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--panel-border);
-  background: rgba(0,0,0,.28); color: var(--ink); font-size: 15px; outline: none; transition: border .2s, box-shadow .2s;
-}
-.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(227,165,72,.2); }
-label.field { display: block; margin: 12px 0; font-size: 13px; color: var(--ink-dim); font-weight: 700; letter-spacing: .02em; }
-label.field > .input { margin-top: 6px; }
-.error-text { color: #ff9a80; font-size: 14px; min-height: 18px; margin: 6px 0; }
+h1, h2, h3 { margin: 0 0 10px; }
+.display { font-family: var(--font-display); letter-spacing: .03em; }
 .muted { color: var(--ink-dim); }
 .faint { color: var(--ink-faint); }
 .row { display: flex; gap: 10px; align-items: center; }
 .grow { flex: 1; }
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; background: rgba(255,255,255,.1); }
-.chip-danger { background: rgba(224, 96, 63, .25); color: #ffb39f; }
-h1, h2, h3 { margin: 0 0 10px; }
-.display { font-family: var(--font-display); letter-spacing: .03em; }
-.scroll { overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(214,190,130,.3) transparent; }
+.scroll { overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--wood-dark) transparent; }
+.scroll::-webkit-scrollbar { width: 8px; }
+.scroll::-webkit-scrollbar-thumb { background: var(--wood-dark); border-radius: 4px; }
 
-/* ---------- Toasts & modals ---------- */
-#toasts { position: fixed; top: 86px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 1000; pointer-events: none; align-items: center; }
-.toast { padding: 10px 18px; border-radius: 12px; background: var(--panel-solid); border: 1px solid var(--panel-border); box-shadow: var(--shadow); font-weight: 700; font-size: 14px; opacity: 0; transform: translateY(-8px); transition: all .3s; max-width: 560px; text-align: center; }
+/* ---------- Icons (game-icons.net SVGs, tinted with CSS) ---------- */
+.gi {
+  display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -0.22em; flex: none;
+  background: currentColor;
+  -webkit-mask: var(--gi) center / contain no-repeat; mask: var(--gi) center / contain no-repeat;
+}
+
+/* ---------- Frames ---------- */
+.panel {
+  border: 14px solid transparent;
+  border-image: url(/assets/ui/panels/kenney_rpg_panel_brown.png) 14 fill / 14px round;
+  filter: var(--shadow);
+  color: var(--ink);
+}
+.parchment {
+  border: 10px solid transparent;
+  border-image: url(/assets/ui/panels/kenney_rpg_panel_beigeLight.png) 14 fill / 10px round;
+  color: var(--ink-dark);
+}
+.inset, .list-item, .item-detail, .hud-chat .log {
+  border: 8px solid transparent;
+  border-image: url(/assets/ui/panels/kenney_rpg_panelInset_brown.png) 8 fill / 8px round;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  position: relative; cursor: pointer; font-weight: 800; font-size: 15px; letter-spacing: .02em;
+  color: var(--ink); text-shadow: 0 1px 0 rgba(0,0,0,.45);
+  background: none; padding: 3px 16px; min-height: 40px;
+  border-style: solid; border-color: transparent; border-width: 8px 8px 12px 8px;
+  border-image: url(/assets/ui/buttons/kenney_rpg_buttonLong_brown.png) 8 8 12 8 fill / 8px 8px 12px 8px stretch;
+  transition: filter .12s, transform .08s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:active, .btn.pressed {
+  border-image-source: url(/assets/ui/buttons/kenney_rpg_buttonLong_brown_pressed.png);
+  border-bottom-width: 8px; transform: translateY(4px);
+}
+.btn:disabled { filter: grayscale(.7) brightness(.8); cursor: not-allowed; transform: none; }
+.btn-primary { color: var(--ink-dark); text-shadow: 0 1px 0 rgba(255,255,255,.4); border-image-source: url(/assets/ui/buttons/kenney_rpg_buttonLong_beige.png); }
+.btn-primary:active { border-image-source: url(/assets/ui/buttons/kenney_rpg_buttonLong_beige_pressed.png); }
+.btn-danger { filter: hue-rotate(-28deg) saturate(1.9); }
+.btn-danger:hover { filter: hue-rotate(-28deg) saturate(1.9) brightness(1.1); }
+.btn-ghost { }
+.btn-sm { font-size: 13px; padding: 0 10px; min-height: 32px; }
+
+/* ---------- Form controls ---------- */
+.input, select.input, textarea.input {
+  width: 100%; padding: 4px 8px; font-size: 15px; color: var(--ink-dark); outline: none; background: none;
+  border: 8px solid transparent;
+  border-image: url(/assets/ui/panels/kenney_rpg_panelInset_beige.png) 8 fill / 8px round;
+}
+.input::placeholder { color: var(--ink-dark-dim); opacity: .8; }
+.input:focus { filter: brightness(1.08) drop-shadow(0 0 4px rgba(240,183,90,.8)); }
+select.input { appearance: none; -webkit-appearance: none; padding-right: 28px; cursor: pointer;
+  background: linear-gradient(45deg, transparent 50%, var(--ink-dark) 50%) right 12px center / 6px 6px no-repeat,
+              linear-gradient(-45deg, transparent 50%, var(--ink-dark) 50%) right 6px center / 6px 6px no-repeat; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 26px; background: transparent; }
+input[type=range]::-webkit-slider-runnable-track { height: 12px; border: 5px solid transparent; border-image: url(/assets/ui/panels/kenney_rpg_panelInset_beige.png) 8 fill / 5px; }
+input[type=range]::-moz-range-track { height: 12px; border: 5px solid transparent; border-image: url(/assets/ui/panels/kenney_rpg_panelInset_beige.png) 8 fill / 5px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 28px; margin-top: -13px; border: none; background: url(/assets/ui/buttons/kenney_rpg_buttonRound_brown.png) center/contain no-repeat; cursor: grab; }
+input[type=range]::-moz-range-thumb { width: 26px; height: 28px; border: none; background: url(/assets/ui/buttons/kenney_rpg_buttonRound_brown.png) center/contain no-repeat; cursor: grab; }
+label.field { display: block; margin: 12px 0; font-size: 13px; color: var(--ink-dim); font-weight: 800; letter-spacing: .03em; }
+label.field > .input { margin-top: 6px; }
+.error-text { color: #ffd0c0; background: rgba(120,30,10,.35); border-radius: 6px; font-size: 14px; min-height: 0; margin: 6px 0; padding: 0 8px; }
+.error-text:empty { display: none; }
+
+/* ---------- Small elements ---------- */
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; background: rgba(40,25,12,.45); border: 1px solid rgba(255,230,180,.25); color: var(--ink); }
+.chip-danger { background: rgba(140,40,20,.6); color: #ffd6c8; border-color: rgba(255,150,120,.4); }
+.kbd { display: inline-block; min-width: 24px; padding: 1px 7px; border-radius: 6px; background: var(--parchment); color: var(--ink-dark); border-bottom: 3px solid #9c8455; font-weight: 900; font-size: 12px; text-align: center; }
+.close-x { width: 48px; height: 24px; border: 0; cursor: pointer; font-size: 0; flex: none; background: url(/assets/ui/buttons/kenney_adventure_button_red_close.png) center / contain no-repeat; }
+.close-x:hover { filter: brightness(1.12); }
+.close-x:active { transform: translateY(2px); }
+.tabs, .tabbar { display: flex; gap: 4px; flex-wrap: wrap; }
+.tabs button, .tabbar button, .pill {
+  cursor: pointer; font-weight: 800; font-size: 13px; color: var(--ink); background: none; padding: 0 10px; min-height: 30px;
+  border-style: solid; border-color: transparent; border-width: 6px 6px 9px 6px;
+  border-image: url(/assets/ui/buttons/kenney_rpg_buttonSquare_brown.png) 8 8 12 8 fill / 6px 6px 9px 6px stretch;
+  text-transform: capitalize;
+}
+.tabs button.active, .tabbar button.active, .pill.active { color: var(--ink-dark); border-image-source: url(/assets/ui/buttons/kenney_rpg_buttonSquare_beige.png); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+  white-space: nowrap; pointer-events: none; z-index: 50; font-size: 12px; font-weight: 800; color: var(--ink-dark);
+  padding: 2px 6px; border: 6px solid transparent; border-image: url(/assets/ui/panels/kenney_rpg_panel_beigeLight.png) 14 fill / 6px round;
+}
+
+/* ---------- Toasts, modals, loading ---------- */
+#toasts { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; z-index: 1000; pointer-events: none; align-items: center; }
+.toast {
+  padding: 2px 10px; font-weight: 800; font-size: 14px; max-width: 560px; text-align: center; color: var(--ink-dark);
+  border: 10px solid transparent; border-image: url(/assets/ui/panels/kenney_rpg_panel_beigeLight.png) 14 fill / 10px round;
+  filter: var(--shadow); opacity: 0; transform: translateY(-8px); transition: all .3s;
+}
 .toast.show { opacity: 1; transform: none; }
-.toast-success { border-color: rgba(143,196,106,.6); }
-.toast-warning { border-color: rgba(242,194,48,.6); }
-.toast-error { border-color: rgba(224,96,63,.7); }
-.modal-overlay { position: fixed; inset: 0; background: rgba(5,8,5,.6); display: grid; place-items: center; z-index: 900; animation: fade .2s; }
-.modal { padding: 24px; width: min(480px, 92vw); max-height: 86vh; overflow: auto; }
-.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+.toast-success::before { content: "✔ "; color: #3f7a2a; }
+.toast-warning::before { content: "! "; color: #a86a10; }
+.toast-error { color: #7a1c08; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(8,12,6,.6); display: grid; place-items: center; z-index: 900; animation: fade .2s; }
+.modal { padding: 10px 16px 14px; width: min(480px, 92vw); max-height: 86vh; overflow: auto; }
+.modal h2 { font-family: var(--font-display); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap; }
 @keyframes fade { from { opacity: 0 } }
+.loading, .scenic {
+  background:
+    linear-gradient(180deg, rgba(10,16,24,.55), rgba(10,18,8,.35) 45%, rgba(8,12,6,.8)),
+    url(/assets/ui/backgrounds/forest_menu_bg.png) center / cover;
+  image-rendering: pixelated;
+}
+.loading { position: fixed; inset: 0; display: grid; place-items: center; z-index: 3000; }
+.loading .inner { text-align: center; padding: 18px 34px; }
+.spinner { width: 46px; height: 46px; margin: 14px auto; background: var(--accent); -webkit-mask: url(/assets/ui/icons/gameicons_lorc_paw-print.svg) center/contain no-repeat; mask: url(/assets/ui/icons/gameicons_lorc_paw-print.svg) center/contain no-repeat; animation: paw 1.2s ease-in-out infinite; }
+@keyframes paw { 0%,100% { transform: scale(.85) rotate(-10deg); opacity: .6 } 50% { transform: scale(1.1) rotate(10deg); opacity: 1 } }
+.disconnected { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.6); z-index: 2000; }
 
 /* ---------- Website screens ---------- */
 .screen { position: fixed; inset: 0; overflow-y: auto; animation: fade .35s; }
-.scenic {
-  background:
-    radial-gradient(ellipse at 70% -10%, rgba(255, 200, 120, .35), transparent 55%),
-    radial-gradient(ellipse at 20% 110%, rgba(60, 110, 60, .55), transparent 60%),
-    linear-gradient(180deg, #2a3a4a 0%, #3b4a3a 38%, #1e2b1c 70%, #111a10 100%);
-}
-.scenic canvas.backdrop { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
-.screen > .content { position: relative; z-index: 1; }
-.topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; }
-.logo { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: .06em; color: #fbe9c0; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+.screen > .content { position: relative; z-index: 1; image-rendering: auto; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; gap: 12px; flex-wrap: wrap; }
+.logo { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: .06em; color: #fff1cc; text-shadow: 0 3px 0 var(--wood-deep), 0 4px 14px rgba(0,0,0,.6); display: flex; align-items: center; gap: 10px; }
 .logo span { color: var(--accent); }
-.hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; max-width: 1200px; margin: 0 auto; padding: 30px 32px 50px; min-height: calc(100vh - 80px); }
-.hero h1 { font-family: var(--font-display); font-size: clamp(40px, 6vw, 76px); line-height: 1.02; color: #fff3d6; text-shadow: 0 4px 30px rgba(0,0,0,.5); }
-.hero p.lead { font-size: 19px; color: var(--ink-dim); max-width: 560px; line-height: 1.55; }
-.hero .cta { display: flex; gap: 14px; margin: 26px 0; }
-.hero .cta .btn { padding: 14px 30px; font-size: 17px; }
+.logo .gi { color: var(--accent); font-size: 26px; }
+.hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 36px; align-items: center; max-width: 1200px; margin: 0 auto; padding: 10px 28px 40px; min-height: calc(100vh - 90px); }
+.hero-copy { padding: 18px 26px 22px; }
+.hero h1 { font-family: var(--font-display); font-size: clamp(36px, 5.2vw, 66px); line-height: 1.04; color: #fff3d6; text-shadow: 0 3px 0 var(--wood-deep), 0 6px 22px rgba(0,0,0,.55); }
+.hero p.lead { font-size: 18px; color: var(--ink-dim); max-width: 560px; line-height: 1.55; }
+.hero .cta { display: flex; gap: 14px; margin: 22px 0 16px; flex-wrap: wrap; }
+.hero .cta .btn { font-size: 17px; padding: 6px 24px; }
 .hero-art { position: relative; aspect-ratio: 1 / 0.9; }
-.hero-art canvas { width: 100%; height: 100%; }
-.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 1200px; margin: 0 auto 60px; padding: 0 32px; }
-.feature { padding: 20px; }
-.feature h3 { color: var(--accent); font-size: 17px; }
-.feature p { color: var(--ink-dim); margin: 0; line-height: 1.5; font-size: 14.5px; }
-.clans-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-.credits { max-width: 1200px; margin: 0 auto 50px; padding: 18px 32px; color: var(--ink-faint); font-size: 13px; line-height: 1.6; }
-.auth-card { width: min(420px, 92vw); margin: 8vh auto; padding: 30px; }
-.auth-card .tabs { display: flex; gap: 6px; margin-bottom: 14px; background: rgba(0,0,0,.25); padding: 4px; border-radius: 999px; }
-.auth-card .tabs button { flex: 1; border: 0; background: transparent; color: var(--ink-dim); padding: 9px; border-radius: 999px; font-weight: 800; cursor: pointer; }
-.auth-card .tabs button.active { background: rgba(227,165,72,.22); color: var(--ink); }
-
-/* Character select */
-.select-wrap { max-width: 1180px; margin: 0 auto; padding: 10px 32px 60px; }
-.char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; margin-top: 20px; }
-.char-card { padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: transform .15s, border-color .2s; }
-.char-card:hover { transform: translateY(-3px); border-color: rgba(227,165,72,.6); }
-.char-card canvas { width: 100%; height: 170px; border-radius: 10px; background: radial-gradient(ellipse at 50% 80%, rgba(110,150,80,.45), rgba(0,0,0,.15)); }
+.hero-art canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 1200px; margin: 0 auto 40px; padding: 0 28px; }
+.feature { padding: 6px 12px 10px; }
+.feature h3 { color: var(--ink-dark); font-size: 17px; display: flex; gap: 8px; align-items: center; }
+.feature h3 .gi { color: var(--wood-dark); font-size: 22px; }
+.feature p { color: var(--ink-dark-dim); margin: 0; line-height: 1.5; font-size: 14.5px; }
+.clans-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.credits { max-width: 1200px; margin: 0 auto 40px; padding: 8px 18px; color: var(--ink-dark-dim); font-size: 13px; line-height: 1.6; }
+.auth-card { width: min(430px, 92vw); margin: 6vh auto; padding: 10px 18px 18px; }
+.auth-card .tabs { margin-bottom: 10px; }
+.auth-card .tabs button { flex: 1; }
+.select-wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px 60px; }
+.title-banner { display: inline-block; padding: 10px 46px 18px; margin-bottom: 4px; color: #fff; font-family: var(--font-display); font-size: 24px; text-shadow: 0 2px 0 rgba(0,0,0,.35);
+  background: url(/assets/ui/panels/kenney_adventure_banner_hanging.png) center / 100% 100% no-repeat; }
+.char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 14px; }
+.char-card { padding: 6px 10px 10px; display: flex; flex-direction: column; gap: 8px; transition: transform .15s; }
+.char-card:hover { transform: translateY(-3px); }
+.char-card canvas { width: 100%; height: 150px; image-rendering: pixelated; border: 8px solid transparent; border-image: url(/assets/ui/panels/kenney_rpg_panelInset_beige.png) 8 fill / 8px round; }
 .char-card .name { font-size: 20px; font-weight: 900; }
-.char-card.new { align-items: center; justify-content: center; min-height: 300px; border-style: dashed; cursor: pointer; color: var(--ink-dim); font-weight: 800; font-size: 18px; }
+.char-card.new { align-items: center; justify-content: center; min-height: 290px; cursor: pointer; color: var(--ink-dim); font-weight: 800; font-size: 18px; text-align: center; }
+.char-card.new .gi { font-size: 48px; color: var(--accent); }
 .clan-badge { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 13px; }
-.clan-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.clan-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px rgba(0,0,0,.35); }
 
 /* Character creator */
-.creator { display: grid; grid-template-columns: minmax(360px, 1fr) minmax(400px, 560px); gap: 24px; max-width: 1280px; margin: 0 auto; padding: 0 32px 32px; height: calc(100vh - 80px); }
+.creator { display: grid; grid-template-columns: minmax(340px, 1fr) minmax(380px, 540px); gap: 20px; max-width: 1280px; margin: 0 auto; padding: 0 28px 24px; height: calc(100vh - 90px); }
 .creator .preview { position: relative; display: flex; flex-direction: column; }
-.creator .preview canvas { flex: 1; width: 100%; min-height: 0; border-radius: var(--radius); }
-.creator .preview .preview-controls { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+.creator .preview canvas { flex: 1; width: 100%; min-height: 0; image-rendering: pixelated;
+  border: 8px solid transparent; border-image: url(/assets/ui/panels/kenney_rpg_panelInset_beige.png) 8 fill / 8px round; }
+.creator .preview .preview-controls { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; padding-top: 8px; }
 .creator .options { display: flex; flex-direction: column; min-height: 0; }
-.creator .tabbar { display: flex; gap: 4px; padding: 6px; flex-wrap: wrap; }
-.creator .tabbar button { flex: 1; border: 0; padding: 9px 8px; border-radius: 10px; background: transparent; color: var(--ink-dim); font-weight: 800; cursor: pointer; font-size: 13px; }
-.creator .tabbar button.active { background: rgba(227,165,72,.2); color: var(--ink); }
-.creator .tab-body { padding: 4px 18px 18px; flex: 1; }
-.creator .footer { display: flex; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--panel-border); }
-.opt-group { margin: 14px 0; }
+.creator .tabbar { padding: 4px 4px 8px; }
+.creator .tabbar button { flex: 1; }
+.creator .tab-body { padding: 0 6px 10px; flex: 1; }
+.creator .footer { display: flex; gap: 10px; padding: 10px 4px 2px; border-top: 2px solid rgba(0,0,0,.2); }
+.opt-group { margin: 12px 0; }
 .opt-group > .opt-label { font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px; display: flex; justify-content: space-between; }
-.swatches { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
-.swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,.15); cursor: pointer; transition: transform .1s; padding: 0; }
-.swatch:hover { transform: scale(1.12); }
-.swatch.active { border-color: #fff; box-shadow: 0 0 0 3px rgba(227,165,72,.6); }
-input[type=color].swatch { -webkit-appearance: none; appearance: none; background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red); overflow: hidden; }
-input[type=color].swatch::-webkit-color-swatch { border: none; opacity: 0; }
-.pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.pill { border: 1px solid var(--panel-border); background: rgba(0,0,0,.2); color: var(--ink-dim); padding: 7px 13px; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 13px; text-transform: capitalize; }
-.pill.active { background: rgba(227,165,72,.25); border-color: var(--accent); color: var(--ink); }
-input[type=range] { width: 100%; accent-color: var(--accent); }
 .clan-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.clan-choice { padding: 12px; border-radius: 12px; border: 1px solid var(--panel-border); background: rgba(0,0,0,.2); cursor: pointer; text-align: left; color: var(--ink); }
-.clan-choice.active { border-color: var(--accent); background: rgba(227,165,72,.15); }
-.clan-choice b { display: block; margin-bottom: 4px; }
-.clan-choice small { color: var(--ink-dim); line-height: 1.35; display: block; }
+.clan-choice { padding: 6px 10px; cursor: pointer; text-align: left; color: var(--ink-dark); background: none;
+  border: 8px solid transparent; border-image: url(/assets/ui/panels/kenney_rpg_panelInset_beige.png) 8 fill / 8px round; transition: filter .15s, transform .1s; }
+.clan-choice:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.clan-choice.active { border-image-source: url(/assets/ui/panels/kenney_rpg_panel_beigeLight.png); outline: 3px solid var(--accent); outline-offset: -2px; }
+.clan-choice b { display: block; margin-bottom: 2px; }
+.clan-choice small { color: var(--ink-dark-dim); line-height: 1.35; display: block; }
+.clan-choice canvas { image-rendering: pixelated; }
 
 /* ---------- In-game HUD ---------- */
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
 #hud > * { pointer-events: auto; }
-.hud-status { position: absolute; top: 14px; left: 14px; display: flex; gap: 12px; padding: 10px 14px 10px 10px; align-items: center; min-width: 330px; }
-.hud-status canvas.portrait { width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle, rgba(110,150,80,.6), rgba(0,0,0,.4)); border: 2px solid var(--panel-border); }
-.hud-status .who { font-weight: 900; font-size: 17px; }
-.hud-status .sub { font-size: 12px; color: var(--ink-dim); font-weight: 700; margin-bottom: 4px; }
-.bars { display: grid; gap: 4px; min-width: 220px; }
-.bar { position: relative; height: 12px; border-radius: 6px; background: rgba(0,0,0,.45); overflow: hidden; }
-.bar > i { position: absolute; inset: 0 auto 0 0; border-radius: 6px; transition: width .25s; }
-.bar > span { position: absolute; right: 6px; top: -1px; font-size: 10px; font-weight: 900; color: rgba(255,255,255,.85); text-shadow: 0 1px 2px #000; }
-.bar.hp > i { background: linear-gradient(90deg, #c94a35, #e8735a); }
-.bar.st > i { background: linear-gradient(90deg, #d9a62b, #f2d13a); }
-.bar.hu > i { background: linear-gradient(90deg, #6a9a3a, #8fc46a); }
-.conditions { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-.hud-clock { position: absolute; top: 14px; right: 14px; width: 220px; padding: 10px; text-align: center; }
-.hud-clock .time { font-weight: 900; font-size: 16px; }
-.hud-clock .meta { font-size: 12px; color: var(--ink-dim); font-weight: 700; }
-.hud-clock canvas.minimap { width: 200px; height: 200px; border-radius: 10px; margin-top: 8px; display: block; cursor: pointer; }
-.hud-territory { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); padding: 6px 16px; font-weight: 800; font-size: 13px; letter-spacing: .04em; }
-.hud-chat { position: absolute; left: 14px; bottom: 14px; width: min(430px, 40vw); display: flex; flex-direction: column; padding: 8px; }
-.hud-chat .tabs { display: flex; gap: 4px; margin-bottom: 6px; }
-.hud-chat .tabs button { border: 0; background: transparent; color: var(--ink-faint); font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
-.hud-chat .tabs button.active { background: rgba(227,165,72,.22); color: var(--ink); }
-.hud-chat .log { height: 190px; font-size: 13.5px; line-height: 1.45; padding: 2px 6px; }
+.hud-status { position: absolute; top: 10px; left: 10px; display: flex; gap: 10px; padding: 0 6px 0 0; align-items: center; min-width: 300px; }
+.hud-status canvas.portrait { width: 60px; height: 60px; image-rendering: pixelated; border-radius: 50%; background: var(--parchment); box-shadow: 0 0 0 3px var(--wood-deep), inset 0 0 0 2px rgba(0,0,0,.2); }
+.hud-status .who { font-weight: 900; font-size: 16px; }
+.hud-status .sub { font-size: 12px; font-weight: 800; margin-bottom: 3px; }
+.bars { display: grid; gap: 3px; min-width: 210px; }
+.bar { position: relative; height: 16px; border-style: solid; border-color: transparent; border-width: 0 9px;
+  border-image: url(/assets/ui/bars/kenney_rpg_barBack_joined.png) 0 9 fill / 0 9px stretch; }
+.bar > i { position: absolute; top: 0; bottom: 0; left: -9px; min-width: 18px; max-width: calc(100% + 18px);
+  border-style: solid; border-color: transparent; border-width: 0 9px; transition: width .25s;
+  border-image: url(/assets/ui/bars/kenney_rpg_barRed_joined.png) 0 9 fill / 0 9px stretch; }
+.bar > span { position: absolute; right: -2px; top: -1px; font-size: 10px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; }
+.bar > b { position: absolute; left: -4px; top: 1px; font-size: 11px; color: #fff; filter: drop-shadow(0 1px 1px #000); z-index: 1; }
+.bar.hp > i { border-image-source: url(/assets/ui/bars/kenney_rpg_barRed_joined.png); }
+.bar.st > i { border-image-source: url(/assets/ui/bars/kenney_rpg_barYellow_joined.png); }
+.bar.hu > i { border-image-source: url(/assets/ui/bars/kenney_rpg_barGreen_joined.png); }
+.conditions { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+.hud-clock { position: absolute; top: 10px; right: 10px; width: 196px; padding: 0 2px 2px; text-align: center; }
+.hud-clock .time { font-weight: 900; font-size: 15px; display: flex; gap: 6px; justify-content: center; align-items: center; }
+.hud-clock .meta { font-size: 12px; color: var(--ink-dim); font-weight: 800; display: flex; gap: 6px; justify-content: center; align-items: center; }
+.minimap-ring { position: relative; width: 164px; height: 164px; margin: 6px auto 0; cursor: pointer; }
+.minimap-ring canvas.minimap { position: absolute; inset: 12px; width: 140px; height: 140px; border-radius: 50%; display: block; }
+.minimap-ring::after { content: ""; position: absolute; inset: 0; background: url(/assets/ui/panels/kenney_adventure_minimap_ring_brown_detail.png) center / contain no-repeat; pointer-events: none; }
+.hud-territory { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); padding: 8px 44px 15px; font-weight: 900; font-size: 13px; letter-spacing: .05em; color: #fff;
+  background: url(/assets/ui/panels/kenney_adventure_banner_hanging.png) center / 100% 100% no-repeat; text-shadow: 0 1px 0 rgba(0,0,0,.5); filter: var(--shadow); }
+.hud-chat { position: absolute; left: 10px; bottom: 10px; width: min(410px, 38vw); display: flex; flex-direction: column; padding: 0; }
+.hud-chat .tabs { margin-bottom: 4px; }
+.hud-chat .tabs button { min-height: 26px; font-size: 12px; padding: 0 8px; }
+.hud-chat .log { height: 150px; font-size: 13.5px; line-height: 1.45; padding: 0 4px; color: var(--ink); }
 .hud-chat .log .line { margin: 2px 0; word-wrap: break-word; }
 .hud-chat .log .from { font-weight: 900; cursor: pointer; }
-.hud-chat .log .ch { font-size: 10px; font-weight: 900; text-transform: uppercase; opacity: .7; margin-right: 4px; }
-.hud-chat .log .system { color: #b9d8a0; font-style: italic; }
-.hud-chat .log .announcement { color: #ffd98a; font-weight: 700; }
+.hud-chat .log .ch { font-size: 10px; font-weight: 900; text-transform: uppercase; opacity: .75; margin-right: 4px; }
+.hud-chat .log .system { color: #d6efbf; font-style: italic; }
+.hud-chat .log .announcement { color: #ffe39a; font-weight: 800; }
 .hud-chat .log .emote { color: var(--ink-dim); font-style: italic; }
-.hud-chat .log .whisper { color: #d9b5ff; }
-.hud-chat input { margin-top: 6px; }
-.hud-actions { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; padding: 8px; }
-.action { position: relative; width: 58px; height: 58px; border-radius: 12px; background: rgba(0,0,0,.35); border: 1px solid var(--panel-border); display: grid; place-items: center; cursor: pointer; overflow: hidden; }
-.action .ico { font-size: 24px; }
-.action .key { position: absolute; top: 2px; left: 5px; font-size: 10px; font-weight: 900; color: var(--ink-dim); }
-.action .name { position: absolute; bottom: 2px; font-size: 9px; font-weight: 800; color: var(--ink-dim); }
-.action .cd { position: absolute; inset: 0; background: rgba(0,0,0,.6); transform-origin: bottom; transform: scaleY(0); }
-.action.toggled { border-color: var(--accent); box-shadow: inset 0 0 12px rgba(227,165,72,.4); }
-.hud-menu { position: absolute; right: 14px; bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
-.hud-menu button { width: 52px; height: 52px; border-radius: 14px; border: 1px solid var(--panel-border); background: var(--panel); color: var(--ink); font-size: 22px; cursor: pointer; position: relative; }
-.hud-menu button .key { position: absolute; top: 2px; right: 5px; font-size: 9px; font-weight: 900; color: var(--ink-faint); }
-.hud-menu button.badge::after { content: ""; position: absolute; top: 6px; left: 6px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
-.hud-prompt { position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%); padding: 8px 16px; font-weight: 800; font-size: 14px; display: flex; gap: 10px; align-items: center; }
-.kbd { display: inline-block; min-width: 24px; padding: 2px 7px; border-radius: 6px; background: rgba(255,255,255,.15); border-bottom: 2px solid rgba(255,255,255,.25); font-weight: 900; font-size: 12px; text-align: center; }
-.side-panel { position: absolute; right: 80px; bottom: 14px; top: 290px; width: 380px; display: flex; flex-direction: column; animation: slidein .2s; }
+.hud-chat .log .whisper { color: #ead2ff; }
+.hud-chat input { margin-top: 4px; }
+.hud-actions { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; padding: 0 2px; }
+.action { position: relative; width: 54px; height: 56px; cursor: pointer; display: grid; place-items: center; overflow: hidden; color: var(--ink-dark);
+  border-style: solid; border-color: transparent; border-width: 6px 6px 10px 6px;
+  border-image: url(/assets/ui/buttons/kenney_rpg_buttonSquare_beige.png) 8 8 12 8 fill / 6px 6px 10px 6px stretch; }
+.action:active { border-image-source: url(/assets/ui/buttons/kenney_rpg_buttonSquare_beige_pressed.png); border-bottom-width: 6px; transform: translateY(4px); }
+.action .gi { font-size: 24px; margin-top: -6px; }
+.action .key { position: absolute; top: -3px; left: 1px; font-size: 10px; font-weight: 900; color: var(--ink-dark-dim); }
+.action .name { position: absolute; bottom: -2px; font-size: 9px; font-weight: 900; color: var(--ink-dark-dim); }
+.action .cd { position: absolute; inset: 0; background: rgba(40,25,10,.6); transform-origin: bottom; transform: scaleY(0); }
+.action.toggled { border-image-source: url(/assets/ui/buttons/kenney_rpg_buttonSquare_brown.png); color: var(--ink); }
+.action.toggled .key, .action.toggled .name { color: var(--ink-dim); }
+.hud-menu { position: absolute; right: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+.hud-menu button { position: relative; width: 50px; height: 52px; cursor: pointer; color: var(--ink); background: none; display: grid; place-items: center;
+  border-style: solid; border-color: transparent; border-width: 6px 6px 10px 6px;
+  border-image: url(/assets/ui/buttons/kenney_rpg_buttonSquare_brown.png) 8 8 12 8 fill / 6px 6px 10px 6px stretch; }
+.hud-menu button:hover { filter: brightness(1.12); }
+.hud-menu button:active { border-image-source: url(/assets/ui/buttons/kenney_rpg_buttonSquare_brown_pressed.png); border-bottom-width: 6px; transform: translateY(4px); }
+.hud-menu button .gi { font-size: 24px; }
+.hud-menu button .key { position: absolute; top: -3px; right: 0; font-size: 9px; font-weight: 900; color: var(--ink-faint); }
+.hud-prompt { position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%); padding: 0 8px; font-weight: 900; font-size: 14px; display: flex; gap: 10px; align-items: center; }
+.side-panel { position: absolute; right: 70px; bottom: 10px; top: 250px; width: 380px; display: flex; flex-direction: column; animation: slidein .2s; }
 @keyframes slidein { from { opacity: 0; transform: translateX(12px); } }
-.side-panel header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 8px; }
-.side-panel header h2 { margin: 0; font-size: 18px; }
-.side-panel .body { padding: 6px 16px 16px; flex: 1; }
-.close-x { border: 0; background: rgba(255,255,255,.08); color: var(--ink); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; }
-.inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.slot { aspect-ratio: 1; border-radius: 10px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.08); position: relative; display: grid; place-items: center; cursor: pointer; }
-.slot:hover { border-color: var(--accent); }
-.slot canvas { width: 82%; height: 82%; }
-.slot .qty { position: absolute; right: 4px; bottom: 2px; font-size: 11px; font-weight: 900; text-shadow: 0 1px 2px #000; }
-.slot.equipped { border-color: var(--accent-2); box-shadow: inset 0 0 10px rgba(143,196,106,.35); }
-.item-detail { margin-top: 12px; padding: 12px; border-radius: 12px; background: rgba(0,0,0,.25); }
-.list { display: flex; flex-direction: column; gap: 6px; }
-.list-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,.22); }
-.online-dot { width: 8px; height: 8px; border-radius: 50%; background: #666; }
-.online-dot.on { background: #8fc46a; box-shadow: 0 0 6px #8fc46a; }
-.skill { margin: 8px 0; }
-.skill .bar { height: 8px; }
-.skill .bar > i { background: linear-gradient(90deg, #7fb7d9, #a8d8f0); }
-.cat-card { position: absolute; top: 100px; left: 14px; width: 300px; padding: 14px; animation: fade .2s; }
-.cat-card .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.disconnected { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.6); z-index: 2000; }
-.loading { position: fixed; inset: 0; display: grid; place-items: center; z-index: 3000; background: radial-gradient(ellipse at center, #1f2c1c, #0b100a); }
-.loading .inner { text-align: center; }
-.loading .spinner { width: 46px; height: 46px; border: 4px solid rgba(255,255,255,.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 18px auto; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.big-map { position: fixed; inset: 6vh 8vw; z-index: 50; padding: 16px; display: flex; flex-direction: column; }
-.big-map canvas { flex: 1; width: 100%; min-height: 0; object-fit: contain; }
+.side-panel header { display: flex; justify-content: space-between; align-items: center; padding: 0 2px 6px; }
+.side-panel header h2 { margin: -26px 0 0 -6px; padding: 8px 40px 15px; font-size: 16px; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.5);
+  background: url(/assets/ui/panels/kenney_adventure_banner_hanging.png) center / 100% 100% no-repeat; }
+.side-panel .body { padding: 0 4px 4px; flex: 1; }
+.side-panel h3 { font-size: 14px; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+.inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.slot { aspect-ratio: 1; position: relative; display: grid; place-items: center; cursor: pointer;
+  border: 6px solid transparent; border-image: url(/assets/ui/panels/kenney_rpg_panelInset_beige.png) 8 fill / 6px round; }
+.slot:hover { filter: brightness(1.08); }
+.slot img, .list-item img, .item-detail img { image-rendering: pixelated; }
+.slot img { width: 100%; height: 100%; }
+.slot .qty { position: absolute; right: -2px; bottom: -4px; font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; }
+.slot.equipped { outline: 3px solid var(--leaf); outline-offset: -3px; }
+.item-detail { margin-top: 10px; padding: 2px 4px; }
+.list { display: flex; flex-direction: column; gap: 4px; }
+.list-item { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
+.online-dot { width: 9px; height: 9px; border-radius: 50%; background: #5b4a3a; box-shadow: 0 0 0 2px rgba(0,0,0,.3); }
+.online-dot.on { background: var(--leaf); box-shadow: 0 0 6px var(--leaf); }
+.skill { margin: 6px 0; }
+.skill .bar { height: 12px; }
+.skill .bar > i { border-image-source: url(/assets/ui/bars/kenney_rpg_barBlue_joined.png); }
+.cat-card { position: absolute; top: 96px; left: 10px; width: 300px; padding: 2px 6px 6px; animation: fade .2s; }
+.cat-card .actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.big-map { position: fixed; inset: 6vh 8vw; z-index: 50; padding: 4px 8px 8px; display: flex; flex-direction: column; }
+.big-map canvas { flex: 1; width: 100%; min-height: 0; border-radius: 6px; }
 
+@media (max-width: 1200px) {
+  .hud-actions { left: auto; right: 70px; transform: none; }
+  .hud-prompt { left: auto; right: 70px; transform: none; }
+  .side-panel { bottom: 84px; }
+}
+@media (max-width: 1100px) {
+  .side-panel { width: 330px; top: 230px; }
+  .hud-chat { width: min(340px, 42vw); }
+  .hud-chat .log { height: 110px; }
+}
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
   .features { grid-template-columns: 1fr; }
   .creator { grid-template-columns: 1fr; height: auto; }
-  .creator .preview canvas { height: 320px; flex: none; }
+  .creator .preview canvas { height: 300px; flex: none; }
   .hud-status { min-width: 0; transform-origin: top left; transform: scale(.85); }
   .hud-clock { transform-origin: top right; transform: scale(.8); }
-  .side-panel { left: 14px; right: 14px; width: auto; top: 90px; bottom: 90px; }
+  .side-panel { left: 10px; right: 10px; width: auto; top: 84px; bottom: 84px; }
+  .hud-actions { transform: scale(.85); transform-origin: bottom right; }
+}
+@media (max-height: 700px) {
+  .hud-chat .log { height: 90px; }
+  .side-panel { top: 200px; }
+  .minimap-ring { width: 120px; height: 120px; }
+  .minimap-ring canvas.minimap { inset: 9px; width: 102px; height: 102px; }
 }

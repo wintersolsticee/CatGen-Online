@@ -4,6 +4,7 @@ import { h, toast } from "../dom.ts";
 import { api, auth, type CharacterSummary } from "../../api.ts";
 import { Net } from "../../game/net.ts";
 import { GameScene } from "../../game/GameScene.ts";
+import { FxScene } from "../../game/FxScene.ts";
 import { Hud } from "../hud/Hud.ts";
 import { DEFAULT_SETTINGS, type HudContext, type Settings } from "../hud/context.ts";
 
@@ -27,7 +28,7 @@ export function loadSettings(): Settings {
 /** Connects to the world, boots Phaser and the HUD. */
 export function gameScreen(character: CharacterSummary, nav: { exit: () => void }): { el: HTMLElement; dispose: () => void } {
   const status = h("div", { class: "muted" }, "Entering the forest…");
-  const loading = h("div", { class: "loading" }, h("div", { class: "inner" }, h("div", { class: "logo" }, "CatGen ", h("span", {}, "Online")), h("div", { class: "spinner" }), status));
+  const loading = h("div", { class: "loading" }, h("div", { class: "inner panel" }, h("div", { class: "logo" }, "CatGen ", h("span", {}, "Online")), h("div", { class: "spinner" }), status));
   const gameEl = h("div", { id: "game" });
   const el = h("div", {}, gameEl, loading);
   const net = new Net();
@@ -82,11 +83,12 @@ export function gameScreen(character: CharacterSummary, nav: { exit: () => void 
         parent: gameEl,
         backgroundColor: "#1d2a1a",
         scale: { mode: Phaser.Scale.RESIZE, width: window.innerWidth, height: window.innerHeight },
-        render: { antialias: true, pixelArt: false, roundPixels: false, powerPreference: "high-performance" },
+        render: { antialias: true, pixelArt: false, roundPixels: true, powerPreference: "high-performance" },
         fps: { target: 60, smoothStep: false },
         disableContextMenu: true,
         banner: false,
       });
+      game.scene.add("fx", new FxScene(), false);
       game.scene.add("game", scene, true, { net, map, bridge: hud, graphics: settings.graphics });
       if (import.meta.env.DEV) (window as unknown as { __catgen?: unknown }).__catgen = { game, scene, net };
       el.append(hud.el);

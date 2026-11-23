@@ -1,7 +1,8 @@
 import Phaser from "phaser";
 import { normalizeAppearance, getClan, getPrey, type Appearance, type CombatMoveId } from "@catgen/shared";
 import { ANIMS, ANIM_NAMES, CAT_PIXEL_SCALE, FEET_X, FEET_Y, FRAME, catSheet, frameCount, type CatAnim } from "../render/cat-sprites.ts";
-import { preyArt } from "../render/object-textures.ts";
+import { preyArt, pixelate } from "../render/object-textures.ts";
+import { WORLD_PIXEL } from "../render/env-assets.ts";
 import { ensureCanvasTexture } from "./textures.ts";
 
 const RANK_SCALE: Record<string, number> = { kit: 0.6, apprentice: 0.85, medicine_apprentice: 0.85 };
@@ -95,8 +96,9 @@ export class CatSprite extends Phaser.GameObjects.Container {
     this.prefix = ensureCatAnims(this.scene, a);
     this.baseScale = a.size * rs;
     this.body_.setScale(CAT_PIXEL_SCALE * this.baseScale);
-    this.shadow.setSize(105 * this.baseScale, 18 * this.baseScale);
-    this.label.setY(-(100 * this.baseScale + 10));
+    const px = CAT_PIXEL_SCALE * this.baseScale;
+    this.shadow.setSize(17 * px, 3 * px);
+    this.label.setY(-(17 * px + 10));
     this.currentAnim = null; // force re-play with the new textures
   }
 
@@ -140,7 +142,7 @@ export class CatSprite extends Phaser.GameObjects.Container {
 
   /** Per-frame update from view data. */
   tick(dtMs: number, v: CatView) {
-    this.setPosition(v.x, v.y);
+    this.setPosition(Math.round(v.x), Math.round(v.y));
     this.setDepth(v.y);
     const fx = Math.cos(v.facing);
     if (fx > 0.2) this.faceSign = 1;
@@ -196,8 +198,9 @@ export class CatSprite extends Phaser.GameObjects.Container {
       const def = first ? getPrey(first) : undefined;
       if (def) {
         const art = preyArt(def);
-        const key = ensureCanvasTexture(this.scene, "prey_" + def.id, () => art.canvas);
-        this.carried = this.scene.add.image(0, 0, key).setOrigin(0.5, 0.4).setScale(0.32);
+        const key = ensureCanvasTexture(this.scene, "preypx_" + def.id, () => pixelate(art.canvas, 0.5, WORLD_PIXEL));
+        this.scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+        this.carried = this.scene.add.image(0, 0, key).setOrigin(0.5, 0.4).setScale(WORLD_PIXEL * 0.6);
         this.add(this.carried);
       }
     }
@@ -229,7 +232,7 @@ export class CatSprite extends Phaser.GameObjects.Container {
 
   /** Is a world point over this cat? (for click selection) */
   hitTest(x: number, y: number): boolean {
-    const w = 70 * this.baseScale;
-    return Math.abs(x - this.x) < w && y < this.y + 10 && y > this.y - 100 * this.baseScale;
+    const px = CAT_PIXEL_SCALE * this.baseScale;
+    return Math.abs(x - this.x) < 12 * px && y < this.y + 10 && y > this.y - 17 * px;
   }
 }

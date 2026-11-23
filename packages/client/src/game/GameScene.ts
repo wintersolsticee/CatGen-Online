@@ -7,8 +7,9 @@ import type { Net, NetPlayer } from "./net.ts";
 import { CatSprite } from "./CatSprite.ts";
 import { ChunkLayer } from "./world/ChunkLayer.ts";
 import { ObjectLayer } from "./world/ObjectLayer.ts";
-import { Effects } from "./world/Effects.ts";
-import { preyArt, forageArt } from "../render/object-textures.ts";
+import type { FxScene } from "./FxScene.ts";
+import { preyArt, forageArt, pixelate } from "../render/object-textures.ts";
+import { WORLD_PIXEL } from "../render/env-assets.ts";
 import { ensureCanvasTexture } from "./textures.ts";
 import { KEYBINDS, type Keybinds } from "./keybinds.ts";
 
@@ -32,6 +33,8 @@ export interface GameSceneData {
 interface PendingInput { seq: number; dx: number; dy: number; run: boolean; stalk: boolean; dt: number }
 
 const SEND_INTERVAL = 50;
+/** Camera zooms where WORLD_PIXEL * zoom is a whole number (crisp pixel art). */
+const ZOOM_STEPS = [0.5, 0.625, 0.75, 0.875, 1];
 
 export class GameScene extends Phaser.Scene {
   private net!: Net;
@@ -39,7 +42,6 @@ export class GameScene extends Phaser.Scene {
   private bridge!: GameBridge;
   private chunks!: ChunkLayer;
   private objects!: ObjectLayer;
-  private effects!: Effects;
   private cats = new Map<string, CatSprite>();
   private remote = new Map<string, { x: number; y: number }>();
   private preySprites = new Map<string, { img: Phaser.GameObjects.Image; x: number; y: number; flying: boolean }>();
@@ -56,7 +58,7 @@ export class GameScene extends Phaser.Scene {
   private season = "";
   private hudTimer = 0;
   private graphics: "high" | "low" = "high";
-  private zoomTarget = 1;
+  private zoomTarget = 0.75;
   selected: string | null = null;
   /** Debug/preview only: shifts the displayed time of day (never sent to the server). */
   debugTimeOffset = 0;
@@ -93,11 +95,12 @@ export class GameScene extends Phaser.Scene {
       const def = getPrey(id);
       if (!def) return;
       const art = preyArt(def);
-      const key = ensureCanvasTexture(this, "prey_" + def.id, () => art.canvas);
+      const key = ensureCanvasTexture(this, "preypx_" + def.id, () => pixelate(art.canvas, 0.5, WORLD_PIXEL));
+      this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
       const ring = Math.floor(i / 6);
       const a = (i % 6) / 6 * Math.PI * 2 + ring;
       const img = this.add.image(pile.x + Math.cos(a) * (26 - ring * 12), pile.y - 6 + Math.sin(a) * 9 - ring * 8, key)
-        .setOrigin(art.anchorX, art.anchorY).setScale(0.42).setRotation((i % 3 - 1) * 0.5).setFlipX(i % 2 === 0).setDepth(pile.y + i);
+        .setOrigin(art.anchorX, art.anchorY).setScale(WORLD_PIXEL * 0.75).setFlipX(i % 2 === 0).setDepth(pile.y + i);
       this.pileSprites.push(img);
     });
   }
@@ -108,20 +111,24 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.map.pixelWidth, this.map.pixelHeight);
     this.cameras.main.setBackgroundColor("#1d2a1a");
     this.chunks = new ChunkLayer(this, this.map, clock.season);
-    if (this.graphics === "low") {
-      this.chunks.scale = 0.5;
-      this.chunks.maxChunks = 16;
-    }
+    if (this.graphics === "low") this.chunks.maxChunks = 36;
     this.objects = new ObjectLayer(this, this.map, clock.season);
-    this.effects = new Effects(this);
-    this.effects.particlesEnabled = this.graphics === "high";
+    // Atmosphere runs in its own scene layered above the world (unaffected by zoom).
+    const fx = this.scene.get("fx") as FxScene | null;
+    if (fx) {
+      fx.particlesEnabled = this.graphics === "high";
+      this.scene.launch("fx");
+      this.scene.bringToTop("fx");
+    }
 
     const kb = this.input.keyboard!;
     kb.disableGlobalCapture();
     this.keys = Object.fromEntries(Object.entries(KEYBINDS).map(([k, code]) => [k, kb.addKey(code, false)])) as Record<keyof Keybinds, Phaser.Input.Keyboard.Key>;
 
+    // Zoom only in steps that keep every art pixel a whole number of screen pixels.
     this.input.on("wheel", (_p: unknown, _o: unknown, _dx: number, dy: number) => {
-      this.zoomTarget = Phaser.Math.Clamp(this.zoomTarget * (dy > 0 ? 0.9 : 1.1), 0.55, 1.6);
+      const i = ZOOM_STEPS.indexOf(this.zoomTarget);
+      this.zoomTarget = ZOOM_STEPS[Phaser.Math.Clamp((i < 0 ? 2 : i) + (dy > 0 ? -1 : 1), 0, ZOOM_STEPS.length - 1)];
     });
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.rightButtonDown()) return;
@@ -372,8 +379,9 @@ export class GameScene extends Phaser.Scene {
       if (!def) return;
       if (!s) {
         const art = preyArt(def);
-        const key = ensureCanvasTexture(this, "prey_" + def.id, () => art.canvas);
-        const img = this.add.image(pr.x, pr.y, key).setOrigin(art.anchorX, art.anchorY).setScale(0.5);
+        const key = ensureCanvasTexture(this, "preypx_" + def.id, () => pixelate(art.canvas, 0.5, WORLD_PIXEL));
+        this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+        const img = this.add.image(pr.x, pr.y, key).setOrigin(art.anchorX, art.anchorY).setScale(WORLD_PIXEL);
         s = { img, x: pr.x, y: pr.y, flying: false };
         this.preySprites.set(id, s);
       }
@@ -381,7 +389,7 @@ export class GameScene extends Phaser.Scene {
       s.y += (pr.y - s.y) * lerpK;
       const moving = pr.mode === "wander" || pr.mode === "flee";
       const hop = def.look.shape === "rabbit" || def.look.shape === "frog" ? Math.abs(Math.sin(time / (pr.mode === "flee" ? 70 : 140))) * 8 : Math.sin(time / 60) * (moving ? 1.5 : 0);
-      s.img.setPosition(s.x, s.y - (moving ? hop : 0));
+      s.img.setPosition(Math.round(s.x), Math.round(s.y - (moving ? hop : 0)));
       s.img.setFlipX(Math.cos(pr.facing) < 0);
       s.img.setDepth(s.y);
       if (pr.mode === "fly" && !s.flying) {
@@ -401,26 +409,27 @@ export class GameScene extends Phaser.Scene {
       if (!img) {
         const item = getItem(f.itemId);
         const art = forageArt(getHerb(f.itemId) ?? null, f.itemId, item?.color ?? "#ccc");
-        const key = ensureCanvasTexture(this, "forage_" + f.itemId, () => art.canvas);
-        img = this.add.image(f.x, f.y, key).setOrigin(art.anchorX, art.anchorY).setScale(0.75).setDepth(f.y);
+        const key = ensureCanvasTexture(this, "foragepx_" + f.itemId, () => pixelate(art.canvas, 0.75, WORLD_PIXEL));
+        this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+        img = this.add.image(f.x, f.y, key).setOrigin(art.anchorX, art.anchorY).setScale(WORLD_PIXEL).setDepth(f.y);
         this.forageSprites.set(id, img);
       }
       // Gentle glint so collectibles are discoverable.
       const near = Math.hypot(f.x - this.local.x, f.y - this.local.y) < 600;
       img.setVisible(near || Math.hypot(f.x - this.cameras.main.midPoint.x, f.y - this.cameras.main.midPoint.y) < 1400);
-      img.setScale(0.75 + Math.sin(time / 500 + f.x) * 0.03);
+      img.setAlpha(0.85 + Math.sin(time / 400 + f.x) * 0.15);
     });
     for (const [id, img] of this.forageSprites) if (!seenForage.has(id)) { img.destroy(); this.forageSprites.delete(id); }
 
     // ---- World ---------------------------------------------------------------
     const cam = this.cameras.main;
-    cam.setZoom(cam.zoom + (this.zoomTarget - cam.zoom) * 0.12);
+    if (cam.zoom !== this.zoomTarget) cam.setZoom(this.zoomTarget);
     this.chunks.update(cam.worldView, time, this.graphics === "high" ? 2 : 1);
     this.objects.wind = state.weather === "storm" ? 3 : state.weather === "rain" ? 1.8 : 1;
     this.objects.update(cam.worldView, time, this.local.ready ? this.local : null);
     const underground = this.map.terrainAt(this.local.x, this.local.y).underground === true;
     const screen = { x: (this.local.x - cam.worldView.x) * cam.zoom, y: (this.local.y - 50 - cam.worldView.y) * cam.zoom };
-    this.effects.update(clock, state.weather as Weather, underground, [{ x: screen.x, y: screen.y, r: 330 * cam.zoom }], time, dt / 1000);
+    (this.scene.get("fx") as FxScene | null)?.effects?.update(clock, state.weather as Weather, underground, [{ x: screen.x, y: screen.y, r: 330 * cam.zoom }], time, dt / 1000);
 
     // ---- HUD -----------------------------------------------------------------
     this.hudTimer += dt;

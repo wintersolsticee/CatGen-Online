@@ -104,7 +104,7 @@ export function creatorScreen(existing: CharacterSummary | null, nav: { done: ()
   const el = h("div", { class: "screen scenic" },
     h("div", { class: "content" },
       h("div", { class: "topbar" },
-        h("div", { class: "logo" }, existing ? `Editing ${existing.name}` : "Create your cat"),
+        h("div", { class: "title-banner", style: "margin:0" }, existing ? `Editing ${existing.name}` : "Create your cat"),
         h("button", { class: "btn btn-ghost", onclick: nav.back }, "Back"),
       ),
       h("div", { class: "creator" },
