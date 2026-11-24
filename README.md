@@ -9,13 +9,16 @@ peace at Fourtrees beneath the full moon.
 
 ## ▶️ Play now
 
-**👉 [playcatgen.gg](https://playcatgen.gg)**
+**👉 [catgen-rvuv.onrender.com](https://catgen-rvuv.onrender.com/)**
 
 Works on any modern desktop browser (Chrome, Edge, Firefox or Safari).
 
+> The game is hosted on a free server, so it falls asleep when nobody is playing. If the page
+> takes a while to load, wait up to a minute while it wakes up.
+
 ## 📝 How to join
 
-1. Go to **[playcatgen.gg](https://playcatgen.gg)** and click **Join the Clans**.
+1. Go to **[catgen-rvuv.onrender.com](https://catgen-rvuv.onrender.com/)** and click **Join the Clans**.
 2. **Create your account.** Pick a username and a password (at least 8 characters).
 3. **Create your cat.**
    - Give your cat a name.

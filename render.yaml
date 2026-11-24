@@ -12,7 +12,7 @@ services:
           name: catgen-db
           property: connectionString
       - key: CLIENT_ORIGIN
-        value: https://playcatgen.gg,https://www.playcatgen.gg
+        value: https://catgen-rvuv.onrender.com
 databases:
   - name: catgen-db
     plan: free
